@@ -1,0 +1,82 @@
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script>
+  let globalCalculatedYearlyValues = {};
+
+  function determineYearString(i, year) {
+    let yearString = "";
+    if (i==0) {
+      yearString = "Starting"
+    } else {
+      yearString = "Year: " + year;
+    }
+    return yearString;
+  }
+
+  function determineBackgroundClass(i) {
+    let backgroundClass = "";
+    if(i%2==0) {
+      backgroundClass = "evenBackground";
+    } else {
+      backgroundClass = "oddBackground";
+    }
+    return backgroundClass;
+  }
+
+  function drawChart() {
+    console.log(globalCalculatedYearlyValues);
+
+    let barChartData = new Array();
+    barChartData.push(['Year', '$']);
+    console.log("barChartData: " + barChartData);
+    for (i=0; i<globalCalculatedYearlyValues.length; i++) {
+      barChartData.push([globalCalculatedYearlyValues[i].year, globalCalculatedYearlyValues[i].value]);
+    }
+
+    console.log("barChartData 2: " + barChartData);
+
+    var data = google.visualization.arrayToDataTable(barChartData);
+
+    var options = {
+      chart: {
+        title: 'Financial Performance',
+        subtitle: 'Financial Performance over ' + (globalCalculatedYearlyValues.length - 1) + ' years',
+      },
+      bars: 'vertical', // Required for Material Bar Charts.
+      colors: ['#35a52e']
+    };
+
+    var chart = new google.charts.Bar(document.getElementById('drawingChartsContainer'));
+
+    $('#drawingChartsContainer').addClass('chartSize');
+    chart.draw(data, google.charts.Bar.convertOptions(options));
+  }
+
+  function onSuccess(calculatedYearlyValues) {
+    globalCalculatedYearlyValues = calculatedYearlyValues;
+
+    google.charts.load('current', {'packages':['bar']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    var ul = $('#yearlyValuesList').empty();
+    $('#yearlyValuesList').removeClass('loading');
+    let html = "";
+    for (i=0; i<calculatedYearlyValues.length; i++) {
+      let yearString = determineYearString(i, calculatedYearlyValues[i].year);
+      let backgroundClass = determineBackgroundClass(i);
+
+      html += "<div class=\"card \"><div class=\"year " + backgroundClass + "\"><h3>" + yearString + "</h3></div><div class=\"yearlyValue " + backgroundClass + "\">$" + calculatedYearlyValues[i].value + "</div></div>";
+    }
+    ul.html(html);
+    console.log(calculatedYearlyValues);
+    console.log(ul.html());
+  }
+
+  function onFailure(error) {
+    var ul = $('#calculatedYearlyValuesList').empty();
+    ul.append('<div>Error: ' + error.message + '</div>');
+  }
+
+  google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onFailure).runFinancialModel();
+</script>

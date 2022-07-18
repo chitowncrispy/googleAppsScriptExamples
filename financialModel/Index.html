@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <?!= include('Stylesheet'); ?>
+    <base target="_top">
+  </head>
+  <body style="font-family: Arial,sans-serif; color: #151515;">
+    <div class="yearlyValuesHeader">
+      <h1>Yearly Values</h1>
+      <p>Note: These are year end values for each year listed</p>
+    </div>
+    <div id="yearlyValuesList" class="loading">
+      <div>
+        <h3>Loading...<h3>
+      </div>
+    </div>
+    <div class="charts">
+      <div>
+        <h2>Charts</h2>
+      </div>
+    </div>
+    <div id="chartsContainer" class="charts">
+      <div id="drawingChartsContainer">
+        <h4>Loading...</h4>
+      </div>
+    </div>
+
+    <?!= include('Javascript'); ?>
+  </body>
+</html>
