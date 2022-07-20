@@ -4,6 +4,10 @@
 <script>
   let globalCalculatedYearlyValues = {};
 
+  function roundToTwo(num) {
+    return +(Math.round(num + "e+2")  + "e-2");
+  }
+
   function determineYearString(i, year) {
     let yearString = "";
     if (i==0) {
@@ -66,7 +70,26 @@
       let yearString = determineYearString(i, calculatedYearlyValues[i].year);
       let backgroundClass = determineBackgroundClass(i);
 
-      html += "<div class=\"card \"><div class=\"year " + backgroundClass + "\"><h3>" + yearString + "</h3></div><div class=\"yearlyValue " + backgroundClass + "\">$" + calculatedYearlyValues[i].value + "</div></div>";
+      html += "<div class=\"card\"><div class=\"year " + backgroundClass + "\"><h3>" + yearString + "</h3></div><div class=\"yearlyValue " + backgroundClass + "\">$" + calculatedYearlyValues[i].value + "</div></div>";
+
+      if(i!=calculatedYearlyValues.length-1) {
+        let percentChangeClass = "";
+        let calculatedPercentChange = parseFloat(calculatedYearlyValues[i+1].percentChange);
+        calculatedPercentChange = calculatedPercentChange * 100;
+        calculatedPercentChange = roundToTwo(calculatedPercentChange);
+        if (calculatedPercentChange > 0) {
+          percentChangeClass = "percentChangePositive";
+          calculatedPercentChange = '+' + calculatedPercentChange;
+        } else if (calculatedPercentChange < 0) {
+          percentChangeClass = "percentChangeNegative";
+          calculatedPercentChange = '-' + calculatedPercentChange;
+        } else {
+          percentChangeClass = "percentChangeNeutral";
+        }
+        calculatedPercentChange = calculatedPercentChange + '%';
+
+        html += "<div class=\"percentChangeCard\"><div class=\"" + percentChangeClass + " loading\"><h3>" + calculatedPercentChange + "</h3></div></div>"
+      }
     }
     ul.html(html);
     console.log(calculatedYearlyValues);
