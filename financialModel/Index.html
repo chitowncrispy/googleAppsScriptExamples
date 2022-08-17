@@ -5,23 +5,28 @@
     <base target="_top">
   </head>
   <body style="font-family: Arial,sans-serif; color: #151515;">
-    <div class="yearlyValuesHeader">
-      <h1>Yearly Values</h1>
-      <p>Note: These are year end values for each year listed</p>
-    </div>
-    <div id="yearlyValuesList" class="loading">
-      <div>
-        <h3>Loading...<h3>
+    <header class="pageHeader" id="pageHeader">
+      <img id="logo"/>
+      <h2>C. Pinski <a href="tel:123-456-7890" class="phoneNumber">(123) 456-7890</a></h2>
+      <h3 id="illustrationFor">Illustration for</h3>
+    </header>
+
+    <div class="gridContainer">
+      <div class="leftContainer">
+        <h1>Yearly Values</h1>
+        <p class="note">Note: These are year end values for each year listed</p>
+        <div id="yearlyValuesList" class="yearlyValuesListNEW loading">
+          <div>
+            <h3>Loading...</h3>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="charts">
-      <div>
-        <h2>Charts</h2>
-      </div>
-    </div>
-    <div id="chartsContainer" class="charts">
-      <div id="drawingChartsContainer">
-        <h4>Loading...</h4>
+      <div class="rightContainer">
+        <div id="chartsContainer" class="charts">
+          <div id="drawingChartsContainer">
+            <h4>Loading...</h4>
+          </div>
+        </div>
       </div>
     </div>
 

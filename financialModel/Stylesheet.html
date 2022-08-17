@@ -1,18 +1,76 @@
 <style>
+  .pageHeader {
+    text-align: center;
+    margin-bottom: 2em;
+  }
+
+  .gridContainer {
+    display: grid;
+    grid-template-columns: 33% 1fr;
+    grid-template-rows: 1fr;
+    grid-gap: 3em;
+  }
+
+  .leftContainer {
+    text-align: center;
+  }
+
+  .rightContainer {
+    text-align: center;
+  }
+
   .yearlyValuesHeader {
     text-align: center;
   }
 
-  #yearlyValuesList {
+  .yearlyValuesListNEW {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: no wrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .yearlyValuesListNEW::-webkit-scrollbar {
+    height: 0;
+    width: 0;
+  }
+
+  .yearlyValuesList {
     display: flex;
     flex-wrap: no wrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  #yearlyValuesList::-webkit-scrollbar {
+  .yearlyValuesList::-webkit-scrollbar {
     height: 0;
     width: 0;
+  }
+
+  .itemYear {
+    flex: 1;
+    text-align: center;
+    margin: .1em;
+  }
+
+  .itemValue {
+    flex: 2;
+    text-align: center;
+    margin: .1em;
+  }
+
+  .cardNEW {
+    padding: 0;
+    align-content: space-between;
+    border-bottom: 1px solid;
+    border-image: linear-gradient(to right, transparent, #E0E0E0, transparent) 25;
+  }
+
+  .cardNEW>div {
+    display: flex;
+    flex: 1 1 auto;
+    align-content: space-evenly;
   }
 
   .card {
@@ -52,12 +110,15 @@
     text-align: center;
   }
 
-  .evenBackground {
-    background: #D9FFDF;
+  .positiveBackground {
+    background: #C8E6C9;
+    height: 100%;
   }
 
-  .oddBackground {
-    background: #E6F7FF;
+  .negativeBackground {
+    background: #FFCDD2;
+    font-weight: bold;
+    height: 100%;
   }
 
   .loading {
@@ -69,10 +130,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-top: 2em;
   }
 
   .chartSize {
-    width: 900px;
+    width: 650px;
     height: 500px;
+  }
+
+  .note {
+    font-size: 10px;
+  }
+
+  .phoneNumber {
+    text-decoration: none;
+    color: inherit;
   }
 </style>

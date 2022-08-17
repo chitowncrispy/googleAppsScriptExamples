@@ -2,7 +2,15 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 <script>
-  let globalCalculatedYearlyValues = {};
+
+  function onImageLoad(bytes) {
+    document.getElementById("logo").src = "data:image/jpeg;base64," + bytes;
+  }
+
+  google.script.run.withSuccessHandler(onImageLoad).withFailureHandler(null).loadImageBytes();
+
+  let globalCalculatedYearlyValuesStockMarketAccount = {};
+  let globalCalculatedYearlyValuesSafeMoneyOption = {};
 
   function roundToTwo(num) {
     return +(Math.round(num + "e+2")  + "e-2");
@@ -13,42 +21,39 @@
     if (i==0) {
       yearString = "Starting"
     } else {
-      yearString = "Year: " + year;
+      yearString = year;
     }
     return yearString;
   }
 
-  function determineBackgroundClass(i) {
+  function determineBackgroundClass(calculatedPercentChange) {
     let backgroundClass = "";
-    if(i%2==0) {
-      backgroundClass = "evenBackground";
+    if(calculatedPercentChange > 0) {
+      backgroundClass = "positiveBackground";
+    } else if(calculatedPercentChange < 0) {
+      backgroundClass = "negativeBackground";
     } else {
-      backgroundClass = "oddBackground";
+      backgroundClass = "";
     }
     return backgroundClass;
   }
 
   function drawChart() {
-    console.log(globalCalculatedYearlyValues);
-
     let barChartData = new Array();
-    barChartData.push(['Year', '$']);
-    console.log("barChartData: " + barChartData);
-    for (i=0; i<globalCalculatedYearlyValues.length; i++) {
-      barChartData.push([globalCalculatedYearlyValues[i].year, globalCalculatedYearlyValues[i].value]);
+    barChartData.push(['Year', '$ - Safe Money Option', '$ - Stock Market Account']);
+    for (let i=0; i<globalCalculatedYearlyValuesSafeMoneyOption.length; i++) {
+      barChartData.push([globalCalculatedYearlyValuesSafeMoneyOption[i].year, globalCalculatedYearlyValuesSafeMoneyOption[i].value, globalCalculatedYearlyValuesStockMarketAccount[i].value]);
     }
-
-    console.log("barChartData 2: " + barChartData);
 
     var data = google.visualization.arrayToDataTable(barChartData);
 
     var options = {
       chart: {
         title: 'Financial Performance',
-        subtitle: 'Financial Performance over ' + (globalCalculatedYearlyValues.length - 1) + ' years',
+        subtitle: 'Financial Performance over ' + (globalCalculatedYearlyValuesSafeMoneyOption.length - 1) + ' years',
       },
       bars: 'vertical', // Required for Material Bar Charts.
-      colors: ['#35a52e']
+      colors: ['#2E7D32', 'EF6C00']
     };
 
     var chart = new google.charts.Bar(document.getElementById('drawingChartsContainer'));
@@ -57,48 +62,51 @@
     chart.draw(data, google.charts.Bar.convertOptions(options));
   }
 
+  function updateYearlyValuesList(globalCalculatedYearlyValuesStockMarketAccount, globalCalculatedYearlyValuesSafeMoneyOption) {
+    let rowData = [['Year', 'Stock Market Account', 'Stock Market Percentage', 'Safe Money Option', 'Safe Money Percentage']];
+
+    for (let i=0; i<globalCalculatedYearlyValuesStockMarketAccount.length; i++) {
+      let yearString = determineYearString(i, globalCalculatedYearlyValuesStockMarketAccount[i].year);
+      rowData.push([yearString, globalCalculatedYearlyValuesStockMarketAccount[i].value, globalCalculatedYearlyValuesStockMarketAccount[i].percentChange, globalCalculatedYearlyValuesSafeMoneyOption[i].value, globalCalculatedYearlyValuesSafeMoneyOption[i].percentChange]);
+    }
+    
+    let html = "";
+
+    for (let i=0; i<rowData.length; i++) { 
+      if (i==0) {
+        html += "<div class='cardNEW'><div><h3 class='itemYear'>" + rowData[i][0] + "</h3><h3 class='itemValue'>" + rowData[i][1] + "</h3><h3 class='itemValue'>" + rowData[i][3] + "</h3></div></div>";
+      } else {
+        let calculatedPercentChangeStockMarket = roundToTwo(rowData[i][2] * 100);
+        let calculatedPercentChangeSafeMoney = roundToTwo(rowData[i][4] * 100);
+        let stockMarketBackground = determineBackgroundClass(calculatedPercentChangeStockMarket);
+        let safeMoneybackground = determineBackgroundClass(calculatedPercentChangeSafeMoney);
+        html += "<div class='cardNEW'><div><div class='itemYear'><p style='margin: 0'>" + rowData[i][0] + "</p></div><div class='itemValue " + stockMarketBackground + "'><p style='margin: 0'>" + rowData[i][1].toLocaleString("en-US") + " (" + calculatedPercentChangeStockMarket + "%)" + "</p></div><div class='itemValue " + safeMoneybackground + "'><p style='margin: 0'>" + rowData[i][3].toLocaleString("en-US") + " (" + calculatedPercentChangeSafeMoney + "%)" + "</p></div></div></div>";
+      }
+    }
+
+    $('#yearlyValuesList').removeClass('loading');
+    var valuesList = $('#yearlyValuesList').empty();
+    valuesList.html(html);
+  }
+
   function onSuccess(calculatedYearlyValues) {
-    globalCalculatedYearlyValues = calculatedYearlyValues;
+    var valuesList = $('#illustrationFor').empty();
+    valuesList.html("<h3>Illustration for " + calculatedYearlyValues.clientName + "</h3>");
+
+    globalCalculatedYearlyValuesStockMarketAccount = calculatedYearlyValues.yearlyValuesStockMarketAccount;
+    globalCalculatedYearlyValuesSafeMoneyOption = calculatedYearlyValues.yearlyValuesSafeMoneyOption;
 
     google.charts.load('current', {'packages':['bar']});
     google.charts.setOnLoadCallback(drawChart);
 
-    var ul = $('#yearlyValuesList').empty();
-    $('#yearlyValuesList').removeClass('loading');
-    let html = "";
-    for (i=0; i<calculatedYearlyValues.length; i++) {
-      let yearString = determineYearString(i, calculatedYearlyValues[i].year);
-      let backgroundClass = determineBackgroundClass(i);
-
-      html += "<div class=\"card\"><div class=\"year " + backgroundClass + "\"><h3>" + yearString + "</h3></div><div class=\"yearlyValue " + backgroundClass + "\">$" + calculatedYearlyValues[i].value + "</div></div>";
-
-      if(i!=calculatedYearlyValues.length-1) {
-        let percentChangeClass = "";
-        let calculatedPercentChange = parseFloat(calculatedYearlyValues[i+1].percentChange);
-        calculatedPercentChange = calculatedPercentChange * 100;
-        calculatedPercentChange = roundToTwo(calculatedPercentChange);
-        if (calculatedPercentChange > 0) {
-          percentChangeClass = "percentChangePositive";
-          calculatedPercentChange = '+' + calculatedPercentChange;
-        } else if (calculatedPercentChange < 0) {
-          percentChangeClass = "percentChangeNegative";
-          calculatedPercentChange = '-' + calculatedPercentChange;
-        } else {
-          percentChangeClass = "percentChangeNeutral";
-        }
-        calculatedPercentChange = calculatedPercentChange + '%';
-
-        html += "<div class=\"percentChangeCard\"><div class=\"" + percentChangeClass + " loading\"><h3>" + calculatedPercentChange + "</h3></div></div>"
-      }
-    }
-    ul.html(html);
-    console.log(calculatedYearlyValues);
-    console.log(ul.html());
+    updateYearlyValuesList(globalCalculatedYearlyValuesStockMarketAccount, globalCalculatedYearlyValuesSafeMoneyOption);
   }
 
   function onFailure(error) {
-    var ul = $('#calculatedYearlyValuesList').empty();
-    ul.append('<div>Error: ' + error.message + '</div>');
+    let yearlyValuesStockMarketAccountList = $('#yearlyValuesStockMarketAccountList').empty();
+    let yearlyValuesSafeMoneyOptionList = $('#yearlyValuesSafeMoneyOptionList').empty();
+    yearlyValuesStockMarketAccountList.append('<div>Error: ' + error.message + '</div>');
+    yearlyValuesSafeMoneyOptionList.append('<div>Error: ' + error.message + '</div>');
   }
 
   google.script.run.withSuccessHandler(onSuccess).withFailureHandler(onFailure).runFinancialModel();
